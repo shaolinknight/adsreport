@@ -1,0 +1,143 @@
+/* Shared styles: colours, type, and the basics every page uses.
+   TO CHANGE THE LOOK: edit the three palettes below. Each one is just a handful of colours. */
+
+:root,
+:root[data-theme='steel'] {
+  --bg: #f2f4f7;
+  --surface: #ffffff;
+  --ink: #14213d;
+  --ink-2: #4a5568;
+  --ink-3: #6b7685;
+  --line: #d8dee6;
+  --brand: #2f5d8c;
+  --brand-soft: #e4ecf5;
+  --accent: #c99a2e;
+}
+
+:root[data-theme='banner'] {
+  --bg: #f6f4f3;
+  --surface: #ffffff;
+  --ink: #211e22;
+  --ink-2: #5c5560;
+  --ink-3: #766f7a;
+  --line: #e0dad8;
+  --brand: #a32638;
+  --brand-soft: #f6e3e6;
+  --accent: #a9803c;
+}
+
+:root[data-theme='order'] {
+  --bg: #f1f4f1;
+  --surface: #ffffff;
+  --ink: #10241b;
+  --ink-2: #4a5d52;
+  --ink-3: #66776d;
+  --line: #d5ddd6;
+  --brand: #2d6a4f;
+  --brand-soft: #e0eee6;
+  --accent: #b5651d;
+}
+
+/* Meaning colours stay the same in every palette: green is good, red is bad, amber is "watch". */
+:root {
+  --good: #1b7a4a;
+  --good-soft: #e2f3ea;
+  --bad: #b3321f;
+  --bad-soft: #f9e5e1;
+  --warn: #a96a00;
+  --warn-soft: #fbf0d9;
+
+  --serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+  --sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+  --gutter: 16px;
+  --radius: 6px;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--serif);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+a {
+  color: var(--brand);
+}
+
+button,
+select,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+.wrap {
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding-left: var(--gutter);
+  padding-right: var(--gutter);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

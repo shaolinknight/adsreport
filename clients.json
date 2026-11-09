@@ -1,0 +1,30 @@
+[
+  {
+    "id": "pure-meal-prep-sd",
+    "name": "Pure Meal Prep SD",
+    "linkKey": "pure-meal-prep-sd-p7xa72s",
+    "customerId": "",
+    "timezone": "America/Los_Angeles",
+    "currency": "USD",
+    "resultLabel": { "one": "purchase", "many": "purchases" },
+    "conversionActions": ["Purchase"],
+    "goals": { "costPerResult": 40, "monthlyBudget": 3000, "monthlyResults": 75, "roas": 3 },
+    "notes": "Meal prep subscription company in San Diego. A result is a purchase. These goals are placeholders: replace with the real ones.",
+    "sampleProfile": "mealprep",
+    "active": true
+  },
+  {
+    "id": "greenbacks-bookkeeping",
+    "name": "Greenbacks Bookkeeping",
+    "linkKey": "greenbacks-bookkeeping-jukhmb8",
+    "customerId": "",
+    "timezone": "America/Los_Angeles",
+    "currency": "USD",
+    "resultLabel": { "one": "lead", "many": "leads" },
+    "conversionActions": ["Form submission"],
+    "goals": { "costPerResult": 60, "monthlyBudget": 1500, "monthlyResults": 25, "roas": 0 },
+    "notes": "Bookkeeping firm. A result is a lead from a form submission. These goals are placeholders: replace with the real ones.",
+    "sampleProfile": "bookkeeping",
+    "active": true
+  }
+]

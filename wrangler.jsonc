@@ -1,0 +1,27 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ads-reports",
+  "main": "worker/index.mjs",
+  "compatibility_date": "2026-11-01",
+
+  // The built pages. Run "npm run build" to fill this folder.
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "run_worker_first": true,
+    "html_handling": "none"
+  },
+
+  // Saved reports live here. Cloudflare creates this store for you on the first deploy.
+  "kv_namespaces": [{ "binding": "REPORTS" }],
+
+  // Daily refresh: 11:17 UTC, which is 3:17 am in San Diego (4:17 am during daylight saving time).
+  "triggers": { "crons": ["17 11 * * *"] },
+
+  "vars": {
+    "GOOGLE_ADS_API_VERSION": "v25",
+    "REFRESH_RANGES": "7,30,90"
+  },
+
+  "observability": { "enabled": true }
+}

@@ -1,0 +1,16 @@
+{
+  "name": "dashboards",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Live Google Ads client reports, hosted on Cloudflare Workers",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "dev": "node scripts/dev.mjs",
+    "test": "node --test",
+    "deploy": "npm run build && wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "^4.45.0"
+  }
+}
