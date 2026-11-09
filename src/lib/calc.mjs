@@ -316,7 +316,8 @@ export const THRESHOLDS = {
   roasAmber: 0.85,
 };
 
-export function goalStatuses(cur, goals, days, resultLabel) {
+export function goalStatuses(cur, goals, days, resultLabel, thresholds) {
+  const T = { ...THRESHOLDS, ...(thresholds || {}) };
   const out = [];
   if (!goals) return out;
   const factor = days / DAYS_PER_MONTH;
@@ -324,28 +325,28 @@ export function goalStatuses(cur, goals, days, resultLabel) {
   if (goals.costPerResult > 0) {
     const v = cur.costPerResult;
     let status = 'nodata';
-    if (v != null) status = v <= goals.costPerResult ? 'green' : v <= goals.costPerResult * THRESHOLDS.costPerResultAmber ? 'amber' : 'red';
+    if (v != null) status = v <= goals.costPerResult ? 'green' : v <= goals.costPerResult * T.costPerResultAmber ? 'amber' : 'red';
     out.push({ key: 'costPerResult', label: `Cost per ${resultLabel.one}`, value: v, goal: goals.costPerResult, status, kind: 'money', lowerIsBetter: true });
   }
   if (goals.monthlyResults > 0) {
     const target = goals.monthlyResults * factor;
     const v = cur.results;
-    const status = v >= target ? 'green' : v >= target * THRESHOLDS.resultsAmber ? 'amber' : 'red';
+    const status = v >= target ? 'green' : v >= target * T.resultsAmber ? 'amber' : 'red';
     out.push({ key: 'results', label: `${capitalize(resultLabel.many)}`, value: v, goal: target, status, kind: 'results' });
   }
   if (goals.monthlyBudget > 0) {
     const target = goals.monthlyBudget * factor;
     const v = cur.spend;
     let status = 'green';
-    if (v > target * THRESHOLDS.spendRed) status = 'red';
-    else if (v > target * THRESHOLDS.spendAmber) status = 'amber';
-    else if (v < target * THRESHOLDS.spendLow) status = 'amber';
+    if (v > target * T.spendRed) status = 'red';
+    else if (v > target * T.spendAmber) status = 'amber';
+    else if (v < target * T.spendLow) status = 'amber';
     out.push({ key: 'spend', label: 'Spend vs budget', value: v, goal: target, status, kind: 'money' });
   }
   if (goals.roas > 0) {
     const v = cur.roas;
     let status = 'nodata';
-    if (v != null) status = v >= goals.roas ? 'green' : v >= goals.roas * THRESHOLDS.roasAmber ? 'amber' : 'red';
+    if (v != null) status = v >= goals.roas ? 'green' : v >= goals.roas * T.roasAmber ? 'amber' : 'red';
     out.push({ key: 'roas', label: 'Return on ad spend', value: v, goal: goals.roas, status, kind: 'ratio' });
   }
   return out;
@@ -380,7 +381,7 @@ export function buildNarrative(payload, type) {
   const days = diffDays(payload.range.start, payload.range.end) + 1;
   const { cur, prev } = periodTotals(payload, type);
   const campaigns = campaignTable(payload, type);
-  const goals = goalStatuses(cur, payload.client.goals, days, label);
+  const goals = goalStatuses(cur, payload.client.goals, days, label, payload.client.thresholds);
 
   if (cur.spend === 0 && cur.impressions === 0) {
     return {

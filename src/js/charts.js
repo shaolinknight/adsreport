@@ -54,12 +54,12 @@ export function lineChart({ points, width, fmt, label }) {
     xl += `<text x="${x(i).toFixed(1)}" y="${H - 7}" text-anchor="${anchor}" font-size="11.5" fill="var(--ink-3)">${esc(shortDate(points[i].date))}</text>`;
   }
 
-  const area = n > 1 ? `<path d="${path('cur')}L${x(n - 1).toFixed(1)},${y(0)}L${x(0).toFixed(1)},${y(0)}Z" fill="var(--brand)" opacity="0.08"/>` : '';
+  const area = n > 1 ? `<path d="${path('cur')}L${x(n - 1).toFixed(1)},${y(0)}L${x(0).toFixed(1)},${y(0)}Z" fill="var(--chip-3)" opacity="0.28"/>` : '';
   const dot = n === 1 ? `<circle cx="${x(0)}" cy="${y(points[0].cur)}" r="4" fill="var(--brand)"/>` : '';
 
   const svg = `<svg id="trend-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(label)}" width="${W}" height="${H}">
     ${grid}${xl}
-    <path d="${path('prev')}" fill="none" stroke="var(--ink-3)" stroke-width="1.75" stroke-dasharray="5 4" stroke-linejoin="round"/>
+    <path d="${path('prev')}" fill="none" stroke="var(--chip-4)" stroke-width="2" stroke-dasharray="5 4" stroke-linejoin="round"/>
     ${area}
     <path d="${path('cur')}" fill="none" stroke="var(--brand)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
     ${dot}

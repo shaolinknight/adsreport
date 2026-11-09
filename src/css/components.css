@@ -1,0 +1,185 @@
+/* Small pieces used by both the client report and the hub: goal strips, status labels, tags, change arrows. */
+
+.delta {
+  margin-top: 6px;
+  font-size: var(--t-sm);
+  color: var(--ink-3);
+}
+
+.delta .chg {
+  font-weight: 650;
+}
+
+.tone-good {
+  color: var(--good);
+}
+
+.tone-bad {
+  color: var(--bad);
+}
+
+.tone-neutral,
+.tone-flat {
+  color: var(--ink-3);
+}
+
+
+/* ---- Goals: each one is a five-step paint strip that fills as the goal is reached ---- */
+.goals {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 26px 44px;
+  margin-top: 18px;
+}
+
+.goal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.goal-name {
+  font-weight: 650;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 2px 11px 2px 9px;
+  border-radius: 99px;
+  font-size: var(--t-xs);
+  font-weight: 650;
+  background: var(--chip-1);
+  color: var(--ink-2);
+}
+
+.status::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.status.green {
+  background: var(--good-soft);
+  color: var(--good);
+}
+
+.status.amber {
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+
+.status.amber::before {
+  border-radius: 1px;
+  transform: rotate(45deg);
+}
+
+.status.red {
+  background: var(--bad-soft);
+  color: var(--bad);
+}
+
+.status.red::before {
+  border-radius: 1px;
+}
+
+.strip {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 3px;
+  margin: 12px 0 9px;
+}
+
+.step {
+  position: relative;
+  height: 26px;
+  border-radius: 5px;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  overflow: hidden;
+}
+
+.step i {
+  position: absolute;
+  inset: 0;
+  width: var(--fill, 0%);
+  background: var(--chip-2);
+}
+
+.step:nth-child(2) i {
+  background: var(--chip-3);
+}
+
+.step:nth-child(3) i {
+  background: var(--chip-4);
+}
+
+.step:nth-child(4) i {
+  background: var(--chip-5);
+}
+
+.step:nth-child(5) i {
+  background: var(--chip-6);
+}
+
+.strip::after {
+  content: '';
+  position: absolute;
+  left: calc(80% - 0.1px);
+  top: -5px;
+  bottom: -5px;
+  width: 2px;
+  background: var(--ink);
+  border-radius: 1px;
+}
+
+.goal-foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: var(--t-sm);
+  color: var(--ink-2);
+}
+
+.goal-foot b {
+  color: var(--ink);
+  font-weight: 650;
+}
+
+
+.tag {
+  display: inline-block;
+  margin: 4px 6px 0 0;
+  padding: 1px 9px;
+  border-radius: 99px;
+  font-size: var(--t-xs);
+  font-weight: 650;
+  background: var(--chip-1);
+  color: var(--ink-2);
+}
+
+td.name .tag:first-of-type {
+  margin-left: 0;
+}
+
+.tag.good {
+  background: var(--good-soft);
+  color: var(--good);
+}
+
+.tag.bad {
+  background: var(--bad-soft);
+  color: var(--bad);
+}
+
+.tag.warn {
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+

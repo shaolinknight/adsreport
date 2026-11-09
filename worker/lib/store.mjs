@@ -1,27 +1,12 @@
-// The client list and saved reports.
+// Saved reports.
 //
-// Version 1.0: the client list is the bundled clients.json file.
-// Saved reports live in Cloudflare KV (the "REPORTS" store). A data version number is part of every
+// They live in Cloudflare KV (the "REPORTS" store). A data version number is part of every
 // saved key, so when the numbers or their shape change, old saved copies are simply not found
-// and get rebuilt.
+// and get rebuilt. (The client list and settings are in config.mjs.)
 
-import clientsFile from '../../clients.json' with { type: 'json' };
 import { DATA_VERSION } from '../../src/lib/calc.mjs';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-
-export function listClients() {
-  return clientsFile;
-}
-
-export function findClientByKey(linkKey, clients = listClients()) {
-  if (!linkKey) return null;
-  return clients.find((c) => c.linkKey === linkKey && c.active !== false) || null;
-}
-
-export function findClientById(id, clients = listClients()) {
-  return clients.find((c) => c.id === id) || null;
-}
 
 export function reportKey(clientId, rangeKey) {
   return `report:v${DATA_VERSION}:${clientId}:${rangeKey}`;

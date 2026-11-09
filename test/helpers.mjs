@@ -11,6 +11,9 @@ export function fakeKV() {
     async put(key, value) {
       data.set(key, value);
     },
+    async delete(key) {
+      data.delete(key);
+    },
   };
 }
 

@@ -6,6 +6,7 @@ import {
   runQuery, runWithOptionalFields, translateError,
 } from '../worker/lib/ads.mjs';
 import { ENV, REAL_CLIENT, fakeGoogle } from './helpers.mjs';
+import { adsConfigured } from '../worker/lib/ads.mjs';
 
 test.beforeEach(() => resetTokenCache());
 
@@ -75,6 +76,16 @@ test('requests use OAuth only: bearer token, manager account ID in digits, and n
   assert.match(h.authorization, /^Bearer tok-/);
   assert.equal(h['login-customer-id'], '1234567890');
   assert.equal(Object.keys(h).some((k) => k.toLowerCase().includes('developer')), false);
+});
+
+test('the manager account ID is optional: without it the header is left out and Google Ads still counts as connected', async () => {
+  const env = { ...ENV, GOOGLE_ADS_LOGIN_CUSTOMER_ID: '' };
+  assert.equal(adsConfigured(env), true);
+  const g = fakeGoogle();
+  resetTokenCache();
+  await runQuery(env, '987-654-3210', 'SELECT campaign.id FROM campaign', { fetchImpl: g.fetchImpl });
+  const call = g.calls.find((c) => c.url.includes('googleads.googleapis.com'));
+  assert.equal('login-customer-id' in call.init.headers, false);
 });
 
 test('the API version comes from a setting', async () => {

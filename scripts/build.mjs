@@ -17,10 +17,17 @@ export async function build() {
   for (const name of await readdir(join(src, 'pages'))) await cp(join(src, 'pages', name), join(dist, name));
   for (const name of await readdir(join(src, 'public'))) await cp(join(src, 'public', name), join(dist, name));
 
-  // One stylesheet, in a fixed order
-  const css = [];
-  for (const name of ['base.css', 'report.css']) css.push(await readFile(join(src, 'css', name), 'utf8'));
-  await writeFile(join(dist, 'css', 'app.css'), css.join('\n'));
+  // One stylesheet per kind of page, in a fixed order: the client report, and the team and admin hub.
+  for (const [out, parts] of [['app.css', ['base.css', 'components.css', 'report.css']], ['hub.css', ['base.css', 'components.css', 'hub.css']]]) {
+    const css = [];
+    for (const name of parts) css.push(await readFile(join(src, 'css', name), 'utf8'));
+    await writeFile(join(dist, 'css', out), css.join('\n'));
+  }
+
+  // The typeface, served from the same site (nothing is loaded from Google).
+  await mkdir(join(dist, 'fonts'), { recursive: true });
+  const fontDir = join(root, 'node_modules', '@fontsource-variable', 'figtree', 'files');
+  for (const name of ['figtree-latin-wght-normal.woff2', 'figtree-latin-ext-wght-normal.woff2']) await cp(join(fontDir, name), join(dist, 'fonts', name));
 
   // Scripts. The report page imports the shared number logic from /lib/, so the folder layout stays the same.
   await cp(join(src, 'js'), join(dist, 'js'), { recursive: true });

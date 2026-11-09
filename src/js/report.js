@@ -6,28 +6,24 @@ import {
   derive, groupRows, periodTotals, rankByResults, rowsFor, sumRows, tone, typesPresent, weeklyTable,
 } from '../lib/calc.mjs';
 import { esc, int, longDate, money, pct, results as fmtResults, shortDate, signedPct } from '../lib/format.mjs';
-import { AGENCY, THEMES } from './brand.js';
+import { AGENCY } from './brand.js';
+import { goalHtml, statusLabel } from '../lib/widgets.mjs';
+import { DEFAULT_METRICS, DEFAULT_METRICS_WITH_SALES, METRICS, TABS, TAB_IDS, resolvePalette } from '../lib/catalog.mjs';
 import { lineChart, nearestIndex } from './charts.js';
 
 const $ = (sel) => document.querySelector(sel);
 const params = new URLSearchParams(location.search);
 
-const TABS = [
-  { id: 'overview', long: 'Overview', short: 'Overview' },
-  { id: 'weeks', long: 'Week by week', short: 'Weeks' },
-  { id: 'campaigns', long: 'Campaigns', short: 'Campaigns' },
-  { id: 'audiences', long: 'Audiences', short: 'Audiences' },
-  { id: 'creative', long: 'Creative', short: 'Creative' },
-];
-
 const state = {
   key: decodeURIComponent(location.pathname.replace(/^\/+|\/+$/g, '')),
-  range: ['7', '30', '90', 'custom'].includes(params.get('range')) ? params.get('range') : '30',
+  // null means "the client's own default", which the server fills in.
+  range: ['7', '30', '90', 'custom'].includes(params.get('range')) ? params.get('range') : null,
   start: params.get('start') || '',
   end: params.get('end') || '',
   type: params.get('type') || 'ALL',
-  tab: TABS.some((t) => t.id === params.get('tab')) ? params.get('tab') : 'overview',
-  theme: THEMES.includes(params.get('theme')) ? params.get('theme') : AGENCY.defaultTheme,
+  tab: TAB_IDS.includes(params.get('tab')) ? params.get('tab') : null,
+  // ?theme= previews any palette on a report link without changing what is saved.
+  theme: params.get('theme') ? resolvePalette(params.get('theme')) : null,
   metric: 'results',
   campaignId: null,
   subtab: 'adGroups',
@@ -48,7 +44,8 @@ async function load() {
   state.loading = true;
   state.error = null;
   render();
-  const q = new URLSearchParams({ c: state.key, range: state.range });
+  const q = new URLSearchParams({ c: state.key });
+  if (state.range) q.set('range', state.range);
   if (state.range === 'custom') {
     q.set('start', state.start);
     q.set('end', state.end);
@@ -63,6 +60,8 @@ async function load() {
     } else {
       state.payload = body.payload;
       state.stale = !!body.stale;
+      if (!state.range) state.range = state.payload.range.preset === 'custom' ? '30' : state.payload.range.preset;
+      if (!state.tab || !clientTabs().includes(state.tab)) state.tab = clientTabs()[0];
       if (state.type !== 'ALL' && !typesPresent(state.payload).includes(state.type)) state.type = 'ALL';
       if (state.campaignId && !state.payload.campaigns.some((c) => c.id === state.campaignId)) state.campaignId = null;
     }
@@ -76,14 +75,14 @@ async function load() {
 
 function syncUrl() {
   const q = new URLSearchParams();
-  if (state.range !== '30') q.set('range', state.range);
+  if (state.range && state.range !== (state.payload?.client?.defaultRange || '30')) q.set('range', state.range);
   if (state.range === 'custom') {
     q.set('start', state.start);
     q.set('end', state.end);
   }
   if (state.type !== 'ALL') q.set('type', state.type);
-  if (state.tab !== 'overview') q.set('tab', state.tab);
-  if (state.theme !== AGENCY.defaultTheme || params.has('theme')) q.set('theme', state.theme);
+  if (state.tab && state.tab !== clientTabs()[0]) q.set('tab', state.tab);
+  if (state.theme) q.set('theme', params.get('theme'));
   const s = q.toString();
   history.replaceState(null, '', location.pathname + (s ? `?${s}` : ''));
 }
@@ -91,6 +90,13 @@ function syncUrl() {
 // ---------- small helpers ----------
 
 const L = () => state.payload.client.resultLabel;
+
+/** The tabs this client's report shows, in order. */
+function clientTabs() {
+  const ids = state.payload?.client?.tabs;
+  const list = Array.isArray(ids) ? TAB_IDS.filter((id) => ids.includes(id)) : [];
+  return list.length ? list : [...TAB_IDS];
+}
 const cur$ = () => state.payload.client.currency || 'USD';
 const M = (n, opts) => money(n, cur$(), opts);
 
@@ -105,10 +111,6 @@ function changeText(metric, chg) {
   const t = tone(metric, chg);
   if (Math.abs(chg) < 0.01) return '<span class="tone-flat">no change</span>';
   return `<span class="chg tone-${t}">${arrowFor(chg)} ${esc(signedPct(chg).replace(/^[+−]/, ''))}</span>`;
-}
-
-function statusLabel(status) {
-  return { green: 'On track', amber: 'Watch', red: 'Off track', nodata: 'No data yet' }[status] || '';
 }
 
 function typeTag(type) {
@@ -126,9 +128,10 @@ function hasActivity(totals) {
 // ---------- header, controls, tabs ----------
 
 function renderChrome() {
-  document.documentElement.dataset.theme = state.theme;
-  $('#brand-mark').textContent = AGENCY.mark;
   const p = state.payload;
+  document.documentElement.dataset.palette = state.theme || resolvePalette(p?.client?.palette, 'harbor');
+  $('#brand-mark').textContent = p?.client?.agency?.mark || AGENCY.mark;
+  $('#brand-text').textContent = p?.client?.agency?.name || 'Google Ads report';
 
   if (!p) {
     $('#client-name').textContent = state.error?.notFound ? 'Report not found' : 'Loading report…';
@@ -177,11 +180,14 @@ function renderChrome() {
     if (!$('#custom-end').value) $('#custom-end').value = r.end;
   }
 
-  $('#tabs').hidden = false;
-  $('#tabs .wrap').innerHTML = TABS.map(
-    (t) =>
-      `<button type="button" role="tab" data-action="tab" data-value="${t.id}" aria-selected="${state.tab === t.id}"><span class="long">${t.long}</span><span class="short">${t.short}</span></button>`,
-  ).join('');
+  const tabIds = clientTabs();
+  $('#tabs').hidden = tabIds.length < 2;
+  $('#tabs .wrap').innerHTML = TABS.filter((t) => tabIds.includes(t.id))
+    .map(
+      (t) =>
+        `<button type="button" role="tab" data-action="tab" data-value="${t.id}" aria-selected="${state.tab === t.id}"><span class="long">${t.long}</span><span class="short">${t.short}</span></button>`,
+    )
+    .join('');
 }
 
 // Reports always end yesterday (in the client's time zone), so that is the latest day that can be picked.
@@ -206,34 +212,51 @@ function renderOverview() {
   const nar = buildNarrative(p, state.type);
   const days = p.range.days;
 
-  const items = [
-    ['spend', 'Spend', M(cur.spend, { cents: false })],
-    ['results', capitalize(l.many), fmtResults(cur.results)],
-    ['costPerResult', `Cost per ${l.one}`, cur.costPerResult == null ? '—' : M(cur.costPerResult)],
-    ['resultRate', `${capitalize(l.one)} rate`, pct(cur.resultRate), `Share of clicks that ended in a ${l.one}`],
-    ['clicks', 'Clicks', int(cur.clicks)],
-    ['ctr', 'Click rate', pct(cur.ctr), 'Share of people who saw an ad and clicked it'],
-    ['impressions', 'Times shown', int(cur.impressions)],
-    p.client.showRevenue
-      ? ['roas', 'Return on ad spend', cur.roas == null ? '—' : `${cur.roas.toFixed(1)}x`, 'Sales for every $1 spent on ads']
-      : ['cpc', 'Cost per click', cur.cpc == null ? '—' : M(cur.cpc)],
-  ];
-
-  const ledger = items
-    .map(([key, label, value, hint]) => {
-      const chg = change(cur[key], prev[key]);
-      return `<div class="ledger-item"><div class="ledger-label"${hint ? ` title="${esc(hint)}"` : ''}>${esc(label)}</div><div class="ledger-value num">${esc(value)}</div><div class="delta">${changeText(key, chg)}</div></div>`;
-    })
+  const metricKeys = (p.client.metrics && p.client.metrics.length >= 3 ? p.client.metrics : p.client.showRevenue ? DEFAULT_METRICS_WITH_SALES : DEFAULT_METRICS)
+    .filter((k) => METRICS.some((m) => m.key === k));
+  const metricView = (key) => {
+    const def = METRICS.find((m) => m.key === key);
+    const label = def.label(l);
+    const hint = def.hint ? def.hint(l) : '';
+    return { key, label, hint, value: formatMetric(def.kind, cur[key]), delta: changeText(key, change(cur[key], prev[key])) };
+  };
+  const views = metricKeys.map(metricView);
+  const chips = views
+    .slice(0, 3)
+    .map(
+      (v) => `<article class="chip"><div class="chip-swatch"${v.hint ? ` title="${esc(v.hint)}"` : ''}>${esc(v.label)}</div><div class="chip-body"><div class="chip-value">${esc(v.value)}</div><div class="delta">${v.delta}</div></div></article>`,
+    )
+    .join('');
+  const minor = views
+    .slice(3)
+    .map(
+      (v) => `<div class="minor-item"><div class="minor-label"${v.hint ? ` title="${esc(v.hint)}"` : ''}>${esc(v.label)}</div><div class="minor-value">${esc(v.value)}</div><div class="delta">${v.delta}</div></div>`,
+    )
     .join('');
 
   return `
     <p class="summary">${esc(nar.summary)}</p>
-    <div class="ledger">${ledger}</div>
+    ${p.client.intro ? `<p class="agency-note">${esc(p.client.intro)}</p>` : ''}
+    <div class="chips">${chips}</div>
+    ${minor ? `<div class="minor">${minor}</div>` : ''}
     <p class="ledger-note">Changes compare with the previous ${days} days.</p>
     ${renderTrend()}
     ${renderGoals(nar.goals)}
     ${renderInsights(nar)}
   `;
+}
+
+function formatMetric(kind, v) {
+  if (v == null || Number.isNaN(v)) return '—';
+  switch (kind) {
+    case 'money0': return M(v, { cents: false });
+    case 'money': return M(v);
+    case 'results': return fmtResults(v);
+    case 'pct': return pct(v);
+    case 'int': return int(v);
+    case 'ratio': return `${v.toFixed(1)}x`;
+    default: return String(v);
+  }
 }
 
 function metricInfo(metric) {
@@ -280,23 +303,7 @@ function goalValue(g, v) {
 
 function renderGoals(goals) {
   if (!goals || !goals.length) return '';
-  const rows = goals
-    .map((g) => {
-      const ratio = g.value == null || g.goal === 0 ? 0 : Math.min(1.5, g.value / g.goal);
-      const fill = (ratio / 1.5) * 100;
-      const goalText =
-        g.key === 'costPerResult' ? `Goal ${goalValue(g, g.goal)} or less`
-        : g.key === 'spend' ? `Budget for this period ${goalValue(g, g.goal)}`
-        : g.key === 'roas' ? `Goal ${goalValue(g, g.goal)} or more`
-        : `Goal for this period ${goalValue(g, g.goal)}`;
-      return `<div class="goal">
-        <div class="goal-name">${esc(g.label)}</div>
-        <div><span class="chip ${g.status}">${statusLabel(g.status)}</span></div>
-        <div class="goal-nums"><span>Now <b class="num">${esc(goalValue(g, g.value))}</b></span><span class="num">${esc(goalText)}</span></div>
-        <div class="meter" aria-hidden="true"><div class="meter-fill fill-${g.status}" style="width:${fill.toFixed(1)}%"></div><div class="meter-goal" style="left:${(100 / 1.5).toFixed(1)}%"></div></div>
-      </div>`;
-    })
-    .join('');
+  const rows = goals.map((g) => goalHtml(g, goalValue)).join('');
   return `<section class="section"><h2>Goals</h2><p class="sub">Goals are scaled to the number of days shown.</p><div class="goals">${rows}</div></section>`;
 }
 
@@ -307,8 +314,10 @@ function renderInsights(nar) {
   return `
     <section class="section">
       <h2>What stands out</h2>
-      ${list ? `<ul class="insights">${list}</ul>` : '<p class="sub">Not enough activity yet to point anything out.</p>'}
-      <div class="next-step"><strong>Next step</strong>${esc(nar.nextStep)}</div>
+      <div class="stand-out">
+        ${list ? `<ul class="insights">${list}</ul>` : '<p class="sub">Not enough activity yet to point anything out.</p>'}
+        <div class="next-step"><strong>Next step</strong>${esc(nar.nextStep)}</div>
+      </div>
     </section>`;
 }
 

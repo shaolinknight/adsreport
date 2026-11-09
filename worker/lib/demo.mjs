@@ -42,7 +42,7 @@ function randomRound(x, rand) {
 
 const PROFILES = {
   mealprep: {
-    dailySpend: 99,
+    dailySpend: 60,
     revenuePerResult: 120,
     weekday: [1.15, 1.05, 1.0, 0.95, 0.88, 0.85, 1.12],
     campaigns: [
@@ -75,8 +75,8 @@ const PROFILES = {
     revenuePerResult: 0,
     weekday: [1.15, 1.2, 1.15, 1.1, 0.95, 0.5, 0.45],
     campaigns: [
-      { id: '2001', name: 'Bookkeeping Services | Search', type: 'SEARCH', share: 0.52, cpc: 4.1, ctr: 0.058, rate: 0.082, status: 'ENABLED' },
-      { id: '2002', name: 'Small Business Accounting | Search', type: 'SEARCH', share: 0.3, cpc: 5.2, ctr: 0.047, rate: 0.058, status: 'ENABLED' },
+      { id: '2001', name: 'Bookkeeping Services | Search', type: 'SEARCH', share: 0.52, cpc: 4.1, ctr: 0.058, rate: 0.017, status: 'ENABLED' },
+      { id: '2002', name: 'Small Business Accounting | Search', type: 'SEARCH', share: 0.3, cpc: 5.2, ctr: 0.047, rate: 0.012, status: 'ENABLED' },
       { id: '2003', name: 'Lead Gen | Performance Max', type: 'PERFORMANCE_MAX', share: 0.18, cpc: 2.8, ctr: 0.016, rate: 0.0, status: 'ENABLED' },
     ],
     adGroups: {

@@ -1,6 +1,6 @@
 {
   "name": "dashboards",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
   "description": "Live Google Ads client reports, hosted on Cloudflare Workers",
@@ -11,6 +11,7 @@
     "deploy": "npm run build && wrangler deploy"
   },
   "devDependencies": {
+    "@fontsource-variable/figtree": "^5.3.0",
     "wrangler": "^4.45.0"
   }
 }

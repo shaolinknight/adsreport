@@ -77,7 +77,7 @@ export function translateError(status, body) {
 // ---------- settings and sign-in ----------
 
 export function adsConfigured(env) {
-  return Boolean(env.GOOGLE_ADS_CLIENT_ID && env.GOOGLE_ADS_CLIENT_SECRET && env.GOOGLE_ADS_REFRESH_TOKEN && env.GOOGLE_ADS_LOGIN_CUSTOMER_ID);
+  return Boolean(env.GOOGLE_ADS_CLIENT_ID && env.GOOGLE_ADS_CLIENT_SECRET && env.GOOGLE_ADS_REFRESH_TOKEN);
 }
 
 const digits = (s) => String(s ?? '').replace(/\D/g, '');
@@ -188,7 +188,8 @@ export async function runQuery(env, customerId, gaql, { fetchImpl = fetch, retry
           method: 'POST',
           headers: {
             authorization: `Bearer ${token}`,
-            'login-customer-id': digits(env.GOOGLE_ADS_LOGIN_CUSTOMER_ID),
+            // Only needed when the client accounts are reached through a manager (MCC) account.
+            ...(digits(env.GOOGLE_ADS_LOGIN_CUSTOMER_ID) ? { 'login-customer-id': digits(env.GOOGLE_ADS_LOGIN_CUSTOMER_ID) } : {}),
             'content-type': 'application/json',
           },
           body: JSON.stringify({ query: gaql }),

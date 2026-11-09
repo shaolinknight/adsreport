@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-theme="steel">
+<html lang="en" data-palette="harbor">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -10,38 +10,37 @@
   <link rel="stylesheet" href="/css/app.css">
 </head>
 <body>
-  <div class="topbar">
+  <div class="band">
     <div class="wrap">
-      <div class="brand">
-        <span class="brand-mark" aria-hidden="true" id="brand-mark">K</span>
-        <span class="brand-text">Google Ads report</span>
+      <div class="band-top">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true" id="brand-mark">K</span>
+          <span class="brand-text" id="brand-text">Google Ads report</span>
+        </div>
+        <div class="updated" id="updated"></div>
       </div>
-      <div class="updated" id="updated"></div>
+      <h1 id="client-name">Loading…</h1>
+      <p class="range-text" id="range-text"></p>
     </div>
+    <nav class="tabs" id="tabs" aria-label="Report sections" hidden>
+      <div class="wrap" role="tablist"></div>
+    </nav>
   </div>
   <div id="banner"></div>
 
-  <header class="head wrap">
-    <h1 id="client-name">Loading…</h1>
-    <p class="range-text" id="range-text"></p>
-    <div class="controls" id="controls" hidden>
-      <div class="seg" role="group" aria-label="Date range" id="range-buttons"></div>
-      <label class="type-filter" id="type-filter" hidden>
-        <span>Campaign type</span>
-        <select id="type-select"></select>
-      </label>
-    </div>
+  <div class="toolbar wrap" id="controls" hidden>
+    <div class="seg" role="group" aria-label="Date range" id="range-buttons"></div>
+    <label class="type-filter" id="type-filter" hidden>
+      <span>Campaign type</span>
+      <select id="type-select"></select>
+    </label>
     <form class="custom-range" id="custom-range" hidden>
       <label>From <input type="date" id="custom-start" required></label>
       <label>To <input type="date" id="custom-end" required></label>
       <button type="submit" class="btn">Show these dates</button>
       <span class="field-error" id="custom-error" role="alert"></span>
     </form>
-  </header>
-
-  <nav class="tabs" id="tabs" aria-label="Report sections" hidden>
-    <div class="wrap" role="tablist"></div>
-  </nav>
+  </div>
 
   <main class="wrap" id="content" aria-live="polite">
     <noscript><div class="notice"><h2>JavaScript is needed</h2><p>This report draws its charts in your browser. Turn JavaScript on and reload the page.</p></div></noscript>

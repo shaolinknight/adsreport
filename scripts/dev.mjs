@@ -43,13 +43,19 @@ const env = {
     async put(key, value) {
       memory.set(key, value);
     },
+    async delete(key) {
+      memory.delete(key);
+    },
   },
   ...process.env,
 };
 
 createServer(async (req, res) => {
   try {
-    const request = new Request(`http://localhost:${port}${req.url}`, { method: req.method, headers: req.headers });
+    const chunks = [];
+    for await (const chunk of req) chunks.push(chunk);
+    const body = chunks.length && !['GET', 'HEAD'].includes(req.method) ? Buffer.concat(chunks) : undefined;
+    const request = new Request(`http://localhost:${port}${req.url}`, { method: req.method, headers: req.headers, body });
     const response = await worker.fetch(request, env, { waitUntil() {} });
     res.writeHead(response.status, Object.fromEntries(response.headers));
     res.end(Buffer.from(await response.arrayBuffer()));

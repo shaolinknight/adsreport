@@ -1,5 +1,6 @@
 // The one Worker behind everything: pages, /api/... and the daily refresh.
 
+import { handleAdmin } from './lib/admin.mjs';
 import { handleRefresh, handleReport, json } from './lib/report.mjs';
 import { runDailyRefresh } from './lib/refresh.mjs';
 
@@ -7,6 +8,7 @@ const CSP = [
   "default-src 'self'",
   "script-src 'self'",
   "style-src 'self' 'unsafe-inline'",
+  "font-src 'self'",
   "img-src 'self' data:",
   "connect-src 'self'",
   "frame-ancestors 'none'",
@@ -35,11 +37,16 @@ async function route(request, env, ctx, deps) {
 
   if (path === '/api/report') return request.method === 'GET' ? handleReport(request, env, ctx, deps) : json({ error: 'Not allowed.' }, 405);
   if (path === '/api/refresh') return handleRefresh(request, env, ctx, deps);
+  if (path === '/api/admin' || path.startsWith('/api/admin/')) return handleAdmin(request, env, ctx, deps);
   if (path.startsWith('/api/')) return json({ error: 'Not found.' }, 404);
 
   if (request.method !== 'GET' && request.method !== 'HEAD') return new Response('Not allowed', { status: 405 });
 
   if (path === '/' || path === '/index.html') return serveAsset(env, request, '/index.html');
+
+  // The admin and team hub is one page that works out what to show in the browser.
+  // The page itself holds nothing private; every number and setting comes from /api/admin after sign-in.
+  if (/^\/(team|admin)(\/.*)?$/.test(path)) return serveAsset(env, request, '/hub.html');
 
   // Files with an extension, and the css/js folders, are real files.
   if (/\.[a-z0-9]+$/i.test(path) || path.startsWith('/css/') || path.startsWith('/js/')) {
